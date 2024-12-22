@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+</head>
+<body>
+<div>
+    message : <input id='message' type='text'/> <input type='button' value='sumbit' onclick="send_message()" />
+</div>
+<div>
+    <span id="response">ff</span>
+</div>
+
+</body>
+<script>
+    const socket = io('http://localhost:9999');
+
+    // Listen for server updates
+    socket.on('server_update', data => {
+        console.log("Server update:", data);
+    });
+
+    // Listen for server responses
+    socket.on('server_response', data => {
+        console.log("Server response:", data);
+        $('#response').text(data.message);
+    });
+
+    function send_message() {
+        const message = $('#message').val();
+        socket.emit('chat', message);
+    };
+</script>
+</html>
