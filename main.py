@@ -13,7 +13,7 @@ model = Llama(
 
 app = Flask(__name__)
 socketio = SocketIO(app)
-socketio.init_app(app, cors_allowed_origins="*")
+socketio.init_app(app, ping_interval=30, ping_timeout=180, cors_allowed_origins="*")
 
 
 def generate_response(instruction):
@@ -58,4 +58,4 @@ def handle_client_message(data):
 
 
 if __name__ == '__main__':
-    eventlet.wsgi.server(eventlet.listen(('', 9999)), app)
+    eventlet.wsgi.server(eventlet.listen(('', 58084)), app)
