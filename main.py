@@ -1,5 +1,5 @@
-from flask import Flask, render_template
-from flask_socketio import SocketIO
+from flask import Flask, render_template, request
+from flask_socketio import SocketIO, emit
 import datetime
 import eventlet
 from llama_cpp import Llama
@@ -12,27 +12,27 @@ model = Llama(
 )
 
 app = Flask(__name__)
-socketio = SocketIO(app)
-socketio.init_app(app, ping_interval=30, ping_timeout=180, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*")
+socketio.init_app(app, ping_interval=30, ping_timeout=180)
 
 
 def generate_response(instruction):
     messages = [
         {"role": "user", "content": f"{instruction}"}
-        ]
+    ]
 
     prompt = tokenizer.apply_chat_template(
         messages,
-        tokenize = False,
+        tokenize=False,
         add_generation_prompt=True
     )
 
     generation_kwargs = {
-        "max_tokens":512,
-        "stop":["<|eot_id|>"],
-        "echo":True,
-        "top_p":0.9,
-        "temperature":0.6,
+        "max_tokens": 512,
+        "stop": ["<|eot_id|>"],
+        "echo": True,
+        "top_p": 0.9,
+        "temperature": 0.6,
     }
 
     response_msg = model(prompt, **generation_kwargs)
@@ -44,17 +44,32 @@ def hello():
     return render_template('index.html')
 
 
+@socketio.on('connect')
+def on_connect():
+    """Handles a new client connection."""
+    print(f"New client connected: {request.sid}")
+    emit('connected', {'message': 'Connected to the server!'})
+
+
+@socketio.on('disconnect')
+def on_disconnect():
+    """Handles client disconnection."""
+    print(f"Client disconnected: {request.sid}")
+
+
 @socketio.on('chat')
 def handle_client_message(data):
     """
-    Handles incoming messages from the client.
+    Handles incoming messages from the client and responds to the same client.
     """
-    print(f"Received message from client: {data}")
-    # Example: Echo the message back to the client
-    socketio.emit('server_response', {
-        'message': f"{generate_response(data)}",
+    client_sid = request.sid  # Unique session ID for each client
+    print(f"Received message from {client_sid}: {data}")
+
+    response = generate_response(data)  # Generate a response based on client input
+    emit('server_response', {
+        'message': response,
         'timestamp': datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    })
+    }, to=client_sid)  # Respond only to the sender
 
 
 if __name__ == '__main__':
