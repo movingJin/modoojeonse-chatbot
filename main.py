@@ -4,12 +4,14 @@ import datetime
 import eventlet
 from llama_cpp import Llama
 from transformers import AutoTokenizer
+from threading import Lock
 
 model_id = 'Bllossom/llama-3.2-Korean-Bllossom-3B'
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 model = Llama(
     model_path='llama-3.2-Korean-Bllossom-3B-gguf-Q4_K_M.gguf'
 )
+model_lock = Lock()
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -35,9 +37,11 @@ def generate_response(instruction):
         "temperature": 0.6,
     }
 
-    response_msg = model(prompt, **generation_kwargs)
-    return response_msg['choices'][0]['text'][len(prompt):]
+    # Ensure thread-safe model access
+    with model_lock:
+        response_msg = model(prompt, **generation_kwargs)
 
+    return response_msg['choices'][0]['text'][len(prompt):]
 
 @app.route('/')
 def hello():
