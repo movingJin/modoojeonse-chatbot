@@ -1,7 +1,7 @@
+import eventlet
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 import datetime
-import eventlet
 from llama_cpp import Llama
 from transformers import AutoTokenizer
 from threading import Lock
@@ -9,12 +9,12 @@ from threading import Lock
 model_id = 'Bllossom/llama-3.2-Korean-Bllossom-3B'
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 model = Llama(
-    model_path='llama-3.2-Korean-Bllossom-3B-gguf-Q4_K_M.gguf'
+    model_path='model/llama-3.2-Korean-Bllossom-3B-gguf-Q4_K_M.gguf'
 )
 model_lock = Lock()
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 socketio.init_app(app, ping_interval=30, ping_timeout=180)
 
 
