@@ -1,0 +1,53 @@
+name: Deploy ChatBot Server
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - name: Transfer source file
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{secrets.PROD_HOST}}
+        username: ${{secrets.PROD_USERNAME}}
+        key: ${{secrets.PROD_PRIVATE_KEY}}
+        port: ${{secrets.PROD_PORT}}
+        source: |
+          main.py
+          templates/*
+        target: ${{ format('{0}/modoojeonse-chatbot', secrets.SERVICE_ROOT) }}
+        overwrite: true
+        debug: true
+
+
+  deploy:
+
+    runs-on: ubuntu-latest
+    permissions: write-all
+    needs: build
+    
+    steps:
+    - name: Deploy to Instance
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{secrets.PROD_HOST}}
+        username: ${{secrets.PROD_USERNAME}}
+        key: ${{secrets.PROD_PRIVATE_KEY}}
+        port: ${{secrets.PROD_PORT}}
+        script: |
+          cd ${{ format('{0}/modoojeonse-chatbot', secrets.SERVICE_ROOT) }}
+          PATH="/var/packages/ContainerManager/target/usr/bin/:$PATH"
+          pwd
+          docker-compose build
+          docker-compose down
+          docker-compose up -d
+          docker image prune -f
