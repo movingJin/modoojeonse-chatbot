@@ -22,7 +22,7 @@ jobs:
         username: ${{secrets.PROD_USERNAME}}
         key: ${{secrets.PROD_PRIVATE_KEY}}
         port: ${{secrets.PROD_PORT}}
-        source: "main.py templates/*"
+        source: "main.py,templates/*"
         target: ${{ format('{0}/modoojeonse-chatbot', secrets.SERVICE_ROOT) }}
         overwrite: true
         debug: true
