@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  prod:
+    container_name: "modoojeonse-chatbot-prod"
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    ports:
+      - "28084:58084"
+    environment:
+      - TZ=Asia/Seoul
