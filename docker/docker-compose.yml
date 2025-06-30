@@ -1,6 +1,7 @@
 version: "3.7"
 services:
   prod:
+    image: modoojeonse-chatbot-prod
     container_name: "modoojeonse-chatbot-prod"
     build:
       context: ../
