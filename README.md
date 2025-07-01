@@ -15,7 +15,6 @@ modoojeonse-frontend/
 ├── dis/
 ├── src/
 ├── model/
-├── docker/
 ├── hooks/
 ├── main.py
 └── ...
@@ -31,7 +30,6 @@ Download a [llama-3.2-Korean-Bllossom-3B-gguf-Q4_K_M.gguf](https://huggingface.c
 Use Docker Compose to build and run the deployment:
 
 ```
-$ cd docker
 $ docker-compose build
 $ docker-compose up -d
 ```
